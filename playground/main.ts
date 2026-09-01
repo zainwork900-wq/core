@@ -5,79 +5,90 @@ import {
   formatTime, getMediaType, type ClipData
 } from './editor';
 
-// === Composition ===
-let composition: any;
+// === State ===
+let composition: any = null;
+let playerEl: HTMLDivElement | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
+// === Composition Builder ===
 async function buildComposition(): Promise<any> {
   const comp = new core.Composition({
     background: '#000000',
   });
 
-  const videoClips = state.clips.filter(c => c.type === 'video' || c.type === 'image');
-  const audioClips = state.clips.filter(c => c.type === 'audio');
+  // Build video/image clips
+  const visualClips = state.clips.filter(c => (c.type === 'video' || c.type === 'image') && c.source);
+  const audioClips = state.clips.filter(c => c.type === 'audio' && c.source);
   const textClips = state.clips.filter(c => c.type === 'text');
 
-  // Video/Image layer
-  if (videoClips.length > 0) {
-    const videoLayer = new core.Layer();
-    await comp.add(videoLayer);
+  // Video/Image layers
+  if (visualClips.length > 0) {
+    const layer = new core.Layer();
+    await comp.add(layer);
 
-    for (const clip of videoClips) {
-      if (!clip.source) continue;
-      const delayStr = `${clip.startTime}s`;
-      if (clip.type === 'video') {
-        const vc = new core.VideoClip(clip.source, {
-          delay: delayStr as any,
-          duration: `${clip.duration}s` as any,
-          effects: clip.effects || [],
-        });
-        await videoLayer.add(vc);
-      } else if (clip.type === 'image') {
-        const ic = new core.ImageClip(clip.source, {
-          delay: delayStr as any,
-          duration: `${clip.duration}s` as any,
-          effects: clip.effects || [],
-        });
-        await videoLayer.add(ic);
+    for (const clip of visualClips) {
+      try {
+        const opts: any = {
+          delay: `${clip.startTime}s`,
+          duration: `${clip.duration}s`,
+        };
+        if (clip.effects && clip.effects.length > 0) {
+          opts.effects = clip.effects;
+        }
+        if (clip.type === 'video') {
+          await layer.add(new core.VideoClip(clip.source, opts));
+        } else {
+          await layer.add(new core.ImageClip(clip.source, opts));
+        }
+      } catch (e) {
+        console.error('Failed to add visual clip:', clip.name, e);
       }
     }
   }
 
-  // Text layer
+  // Text layers
   for (const clip of textClips) {
-    const textLayer = new core.Layer();
-    await comp.add(textLayer);
-    await textLayer.add(new core.TextClip({
-      text: clip.text || '',
-      fontSize: clip.fontSize || 48,
-      color: (clip.fontColor || '#ffffff') as `#${string}`,
-      x: `${clip.x || 50}%` as any,
-      y: `${clip.y || 50}%` as any,
-      align: 'center',
-      baseline: 'middle',
-      delay: `${clip.startTime}s` as any,
-      duration: `${clip.duration}s` as any,
-    }));
+    try {
+      const layer = new core.Layer();
+      await comp.add(layer);
+      await layer.add(new core.TextClip({
+        text: clip.text || '',
+        fontSize: clip.fontSize || 48,
+        color: (clip.fontColor || '#ffffff') as any,
+        x: `${clip.x || 50}%`,
+        y: `${clip.y || 50}%`,
+        align: 'center',
+        baseline: 'middle',
+        delay: `${clip.startTime}s`,
+        duration: `${clip.duration}s`,
+        strokes: [{ width: 2, color: '#000000' }],
+      }));
+    } catch (e) {
+      console.error('Failed to add text clip:', clip.name, e);
+    }
   }
 
-  // Audio layer
+  // Audio layers
   if (audioClips.length > 0) {
-    const audioLayer = new core.Layer();
-    await comp.add(audioLayer);
+    const layer = new core.Layer();
+    await comp.add(layer);
     for (const clip of audioClips) {
-      if (!clip.source) continue;
-      const ac = new core.AudioClip(clip.source, {
-        delay: `${clip.startTime}s` as any,
-        duration: `${clip.duration}s` as any,
-      });
-      await audioLayer.add(ac);
+      try {
+        await layer.add(new core.AudioClip(clip.source, {
+          delay: `${clip.startTime}s`,
+          duration: `${clip.duration}s`,
+          volume: 1,
+        }));
+      } catch (e) {
+        console.error('Failed to add audio clip:', clip.name, e);
+      }
     }
   }
 
   return comp;
 }
 
-// === File Upload Handling ===
+// === File Handling ===
 async function handleFiles(files: FileList | File[]) {
   for (const file of Array.from(files)) {
     const mediaType = getMediaType(file);
@@ -87,7 +98,7 @@ async function handleFiles(files: FileList | File[]) {
     const clip: ClipData = {
       id: nextId(),
       type: mediaType,
-      name: file.name,
+      name: file.name.length > 25 ? file.name.substring(0, 22) + '...' : file.name,
       file,
       url,
       startTime: findNextSlot(),
@@ -100,19 +111,22 @@ async function handleFiles(files: FileList | File[]) {
 
     // Load source
     try {
-      if (mediaType === 'video') {
-        clip.source = await core.Source.from(url);
-        clip.duration = 5;
-      } else if (mediaType === 'audio') {
-        clip.source = await core.Source.from(url);
-        clip.duration = 5;
-      } else if (mediaType === 'image') {
-        clip.source = await core.Source.from(url);
-        clip.duration = 5;
+      clip.source = await core.Source.from(url);
+      // Try to get actual duration
+      if (clip.type === 'video' || clip.type === 'audio') {
+        const tempMedia = document.createElement(clip.type === 'video' ? 'video' : 'audio');
+        tempMedia.src = url;
+        await new Promise<void>((resolve) => {
+          tempMedia.onloadedmetadata = () => {
+            clip.duration = tempMedia.duration || 5;
+            resolve();
+          };
+          tempMedia.onerror = () => resolve();
+          setTimeout(() => resolve(), 3000);
+        });
       }
     } catch (e) {
       console.error('Failed to load source:', file.name, e);
-      clip.duration = 5;
     }
 
     addClip(clip);
@@ -134,99 +148,157 @@ function findNextSlot(): number {
 
 // === Player ===
 async function refreshPlayer() {
-  try {
-    composition = await buildComposition();
-    const playerEl = document.getElementById('player');
-    if (!playerEl) return;
+  if (!playerEl) return;
 
+  try {
+    // Cleanup old composition
+    if (composition) {
+      try { composition.pause(); } catch (e) {}
+      playerEl.innerHTML = '';
+    }
+
+    composition = await buildComposition();
+
+    if (!composition) return;
+
+    // Mount to DOM
     composition.mount(playerEl);
 
+    // Resize handler
     const container = document.getElementById('player-container');
     if (container) {
+      if (resizeObserver) resizeObserver.disconnect();
       const handleResize = () => {
-        if (!composition || !container) return;
-        const scale = Math.min(
-          container.clientWidth / composition.width,
-          container.clientHeight / composition.height
-        );
-        playerEl.style.width = composition.width + 'px';
-        playerEl.style.height = composition.height + 'px';
-        playerEl.style.transform = `scale(${scale})`;
-        playerEl.style.transformOrigin = 'center';
+        if (!composition || !container || !playerEl) return;
+        try {
+          const w = composition.width || 1920;
+          const h = composition.height || 1080;
+          const scale = Math.min(
+            container.clientWidth / w,
+            container.clientHeight / h
+          );
+          playerEl.style.width = w + 'px';
+          playerEl.style.height = h + 'px';
+          playerEl.style.transform = `scale(${scale})`;
+          playerEl.style.transformOrigin = 'center';
+        } catch (e) {}
       };
-      new ResizeObserver(handleResize).observe(container);
+      resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(container);
       handleResize();
     }
 
+    // Seek to start
     composition.seek(0);
     updateTimeDisplay();
+    setupCompositionEvents();
+
   } catch (e) {
-    console.error('Build composition failed:', e);
+    console.error('Failed to build composition:', e);
   }
+}
+
+function setupCompositionEvents() {
+  if (!composition) return;
+
+  composition.on('playback:time', () => {
+    updateTimeDisplay();
+    if (composition) updateCursor(composition.currentTime);
+  });
+
+  composition.on('playback:end', () => {
+    showPlayState(false);
+  });
+}
+
+function showPlayState(playing: boolean) {
+  const playBtn = document.getElementById('btn-play');
+  const pauseBtn = document.getElementById('btn-pause');
+  if (playBtn) playBtn.style.display = playing ? 'none' : '';
+  if (pauseBtn) pauseBtn.style.display = playing ? '' : 'none';
+  state.isPlaying = playing;
 }
 
 function updateTimeDisplay() {
   const el = document.getElementById('time-display');
-  if (!el || !composition) return;
-  el.textContent = `${formatTime(composition.currentTime)} / ${formatTime(composition.duration || state.totalDuration)}`;
-}
-
-// === Controls ===
-function setupControls() {
-  document.getElementById('btn-play')?.addEventListener('click', () => {
-    composition?.play();
-    document.getElementById('btn-play')!.style.display = 'none';
-    document.getElementById('btn-pause')!.style.display = '';
-    state.isPlaying = true;
-  });
-
-  document.getElementById('btn-pause')?.addEventListener('click', () => {
-    composition?.pause();
-    document.getElementById('btn-pause')!.style.display = 'none';
-    document.getElementById('btn-play')!.style.display = '';
-    state.isPlaying = false;
-  });
-
-  document.getElementById('btn-back')?.addEventListener('click', () => {
-    composition?.seek(0);
-    updateTimeDisplay();
-  });
-
-  document.getElementById('btn-forward')?.addEventListener('click', () => {
-    if (composition) composition.seek(composition.duration || state.totalDuration);
-    updateTimeDisplay();
-  });
-
-  composition?.on('playback:time', () => updateTimeDisplay());
-  composition?.on('playback:end', () => {
-    const pauseBtn = document.getElementById('btn-pause');
-    const playBtn = document.getElementById('btn-play');
-    if (pauseBtn) pauseBtn.style.display = 'none';
-    if (playBtn) playBtn.style.display = '';
-    state.isPlaying = false;
-  });
-
-  // Timeline seek
-  const scroll = document.getElementById('timeline-scroll');
-  scroll?.addEventListener('click', (e) => {
-    if (!scroll || !composition) return;
-    const rect = scroll.getBoundingClientRect();
-    const pos = (e.clientX - rect.left + scroll.scrollLeft) / (60 * state.zoom);
-    composition.seek(Math.max(0, pos));
-    updateTimeDisplay();
-    updateCursor(pos);
-  });
-
-  // Cursor update on playback
-  composition?.on('playback:time', () => {
-    if (composition) updateCursor(composition.currentTime);
-  });
+  if (!el) return;
+  if (composition) {
+    el.textContent = `${formatTime(composition.currentTime || 0)} / ${formatTime(composition.duration || state.totalDuration)}`;
+  } else {
+    el.textContent = `00:00 / ${formatTime(state.totalDuration)}`;
+  }
 }
 
 function updateCursor(time: number) {
   const cursor = document.getElementById('timeline-cursor');
   if (!cursor) return;
   cursor.style.left = (time * 60 * state.zoom) + 'px';
+}
+
+// === Controls ===
+function setupControls() {
+  const playBtn = document.getElementById('btn-play');
+  const pauseBtn = document.getElementById('btn-pause');
+  const backBtn = document.getElementById('btn-back');
+  const fwdBtn = document.getElementById('btn-forward');
+
+  playBtn?.addEventListener('click', async () => {
+    if (!composition) {
+      await refreshPlayer();
+    }
+    if (composition) {
+      try {
+        composition.play();
+        showPlayState(true);
+      } catch (e) {
+        console.error('Play failed:', e);
+        // Try rebuilding
+        await refreshPlayer();
+        if (composition) {
+          composition.play();
+          showPlayState(true);
+        }
+      }
+    }
+  });
+
+  pauseBtn?.addEventListener('click', () => {
+    if (composition) {
+      composition.pause();
+      showPlayState(false);
+    }
+  });
+
+  backBtn?.addEventListener('click', () => {
+    if (composition) {
+      composition.seek(0);
+      updateTimeDisplay();
+      updateCursor(0);
+    }
+  });
+
+  fwdBtn?.addEventListener('click', () => {
+    if (composition) {
+      const dur = composition.duration || state.totalDuration;
+      composition.seek(dur);
+      updateTimeDisplay();
+      updateCursor(dur);
+    }
+  });
+
+  // Timeline seek
+  const scroll = document.getElementById('timeline-scroll');
+  scroll?.addEventListener('click', (e) => {
+    if (!scroll) return;
+    const rect = scroll.getBoundingClientRect();
+    const pos = (e.clientX - rect.left + scroll.scrollLeft) / (60 * state.zoom);
+    const clamped = Math.max(0, pos);
+    if (composition) {
+      composition.seek(clamped);
+      updateTimeDisplay();
+    }
+    updateCursor(clamped);
+  });
 }
 
 // === Zoom ===
@@ -246,8 +318,9 @@ function setupTextModal() {
   const modal = document.getElementById('text-modal');
   document.getElementById('btn-add-text')?.addEventListener('click', () => {
     modal!.style.display = '';
-    (document.getElementById('text-input') as HTMLInputElement).value = '';
-    (document.getElementById('text-input') as HTMLInputElement).focus();
+    const input = document.getElementById('text-input') as HTMLInputElement;
+    input.value = '';
+    input.focus();
   });
 
   document.getElementById('text-cancel')?.addEventListener('click', () => {
@@ -261,7 +334,7 @@ function setupTextModal() {
     const clip: ClipData = {
       id: nextId(),
       type: 'text',
-      name: text.substring(0, 20),
+      name: text.length > 20 ? text.substring(0, 17) + '...' : text,
       text,
       fontSize: parseFloat((document.getElementById('text-size') as HTMLInputElement).value) || 48,
       fontColor: (document.getElementById('text-color') as HTMLInputElement).value || '#ffffff',
@@ -286,6 +359,10 @@ function setupExport() {
   const modal = document.getElementById('export-modal');
 
   document.getElementById('btn-export')?.addEventListener('click', () => {
+    if (state.clips.length === 0) {
+      alert('Add some media first before exporting!');
+      return;
+    }
     modal!.style.display = '';
   });
 
@@ -303,15 +380,22 @@ async function doExport() {
   const overlay = document.getElementById('progress-overlay');
   const progressText = document.getElementById('progress-text');
   const progressFill = document.getElementById('progress-fill');
-  if (!overlay || !composition) return;
+  if (!overlay) return;
 
-  overlay.style.display = 'flex';
-  const fps = parseInt((document.getElementById('fps-select') as HTMLSelectElement).value) || 30;
-
+  // Build fresh composition for export
   try {
-    const encoder = new core.Encoder(composition, { debug: true, video: { fps } });
+    const exportComp = await buildComposition();
+    if (!exportComp) {
+      alert('Nothing to export!');
+      return;
+    }
 
-    overlay.addEventListener('click', () => encoder.cancel());
+    overlay.style.display = 'flex';
+    const fps = parseInt((document.getElementById('fps-select') as HTMLSelectElement).value) || 30;
+
+    const encoder = new core.Encoder(exportComp, { debug: true, video: { fps } });
+
+    overlay.onclick = () => encoder.cancel();
 
     encoder.onProgress = (event: any) => {
       const pct = Math.round(event.progress * 100 / event.total);
@@ -325,8 +409,11 @@ async function doExport() {
     });
 
     await encoder.render(fileHandle);
+    alert('Export complete!');
   } catch (e: any) {
-    if (e?.name !== 'AbortError') alert('Export failed: ' + e.message);
+    if (e?.name !== 'AbortError' && e?.message !== 'User cancelled a request.') {
+      alert('Export failed: ' + e.message);
+    }
   } finally {
     overlay.style.display = 'none';
   }
@@ -342,25 +429,25 @@ function setupUploadScreen() {
   function showEditor() {
     uploadScreen!.style.display = 'none';
     editorScreen!.style.display = '';
+    playerEl = document.getElementById('player') as HTMLDivElement;
     renderTimeline();
   }
 
   fileInput.addEventListener('change', async () => {
     if (fileInput.files?.length) {
-      await handleFiles(fileInput.files);
       showEditor();
+      await handleFiles(fileInput.files);
     }
   });
 
-  // Drag and drop
   uploadBox.addEventListener('dragover', (e) => { e.preventDefault(); uploadBox.classList.add('dragover'); });
   uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('dragover'));
   uploadBox.addEventListener('drop', async (e) => {
     e.preventDefault();
     uploadBox.classList.remove('dragover');
     if (e.dataTransfer?.files.length) {
-      await handleFiles(e.dataTransfer.files);
       showEditor();
+      await handleFiles(e.dataTransfer.files);
     }
   });
 }
@@ -382,13 +469,11 @@ function setupMediaAdd() {
 document.addEventListener('DOMContentLoaded', () => {
   setupUploadScreen();
 
-  // These run after editor is shown
   const observer = new MutationObserver(() => {
     const editor = document.getElementById('editor-screen');
     if (editor && editor.style.display !== 'none') {
       observer.disconnect();
-      // Init composition
-      composition = null;
+      playerEl = document.getElementById('player') as HTMLDivElement;
       setupControls();
       setupZoom();
       setupTextModal();
@@ -399,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
   observer.observe(document.body, { subtree: true, attributes: true });
 });
 
-// File picker polyfill
+// Polyfill
 if (!('showSaveFilePicker' in window)) {
   Object.assign(window, {
     showSaveFilePicker: async () => 'edited_video.mp4'
