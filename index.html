@@ -1,90 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Video Editor</title>
   <link rel="stylesheet" href="/playground/editor.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Upload Screen -->
+  <!-- ========== UPLOAD SCREEN ========== -->
   <div id="upload-screen">
     <div class="upload-box">
       <div class="upload-icon">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-        </svg>
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
       </div>
       <h1>Video Editor</h1>
-      <p>Drop your media files here or click to browse</p>
-      <p class="upload-hint">Supports: MP4, WebM, MOV, MP3, WAV, PNG, JPG, GIF</p>
-      <input type="file" id="fileInput" multiple accept="video/*,audio/*,image/*" />
+      <p>Drop media files here or click to browse</p>
+      <p class="upload-hint">MP4, WebM, MOV, MP3, WAV, PNG, JPG, GIF</p>
+      <input type="file" id="fileInput" multiple accept="video/*,audio/*,image/*"/>
       <label for="fileInput" class="upload-btn">Choose Files</label>
     </div>
   </div>
 
-  <!-- Editor Screen -->
+  <!-- ========== EDITOR SCREEN ========== -->
   <div id="editor-screen" style="display:none">
-    <!-- Top Bar -->
+
+    <!-- === TOP BAR === -->
     <header id="topbar">
       <div class="topbar-left">
         <span class="logo">V</span>
-        <span class="project-name" id="projectName">Untitled Project</span>
+        <span class="project-name" id="projectName">Untitled</span>
       </div>
+
       <div class="topbar-center">
-        <button id="btn-back" title="Go to start">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <button class="btn btn-icon" id="btn-back" title="Start">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19,20 9,12 19,4"/></svg>
         </button>
-        <button id="btn-play" title="Play">
+        <button class="btn btn-icon" id="btn-play" title="Play">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
         </button>
-        <button id="btn-pause" title="Pause" style="display:none">
+        <button class="btn btn-icon" id="btn-pause" title="Pause" style="display:none">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
         </button>
-        <button id="btn-forward" title="Go to end">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <button class="btn btn-icon" id="btn-forward" title="End">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,4 15,12 5,20"/></svg>
         </button>
-        <span id="time-display">00:00 / 00:00</span>
+        <span id="time-display">00:00.000 / 00:00.000</span>
       </div>
+
       <div class="topbar-right">
-        <button id="btn-add-text" title="Add text overlay">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+        <button class="btn btn-icon" id="btn-undo" title="Undo (Ctrl+Z)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H3"/><path d="M3 10l4-4M3 10l4 4"/></svg>
+        </button>
+        <button class="btn btn-icon" id="btn-redo" title="Redo (Ctrl+Y)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H11a5 5 0 00-5 5v0a5 5 0 005 5h10"/><path d="M21 10l-4-4M21 10l-4 4"/></svg>
+        </button>
+        <div class="toolbar-sep"></div>
+        <button class="btn btn-sm" id="btn-add-text">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
           Text
         </button>
-        <select id="fps-select" title="Frame rate">
+        <button class="btn btn-sm" id="btn-add-shape">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          Shape
+        </button>
+        <button class="btn btn-sm" id="btn-add-caption">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 12h2M11 12h6M7 16h10"/></svg>
+          Caption
+        </button>
+        <div class="toolbar-sep"></div>
+        <button class="btn btn-sm" id="btn-screenshot" title="Screenshot">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <div class="toolbar-sep"></div>
+        <button class="btn btn-sm" id="btn-save" title="Save Project">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/></svg>
+          Save
+        </button>
+        <button class="btn btn-sm" id="btn-load" title="Load Project">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Load
+        </button>
+        <div class="toolbar-sep"></div>
+        <select id="fps-select" class="btn btn-sm" style="width:auto">
           <option value="24">24 FPS</option>
           <option value="30" selected>30 FPS</option>
           <option value="60">60 FPS</option>
         </select>
-        <button id="btn-export" class="export-btn" title="Export video">
+        <button id="btn-export" class="btn export-btn" style="font-weight:600">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           Export
         </button>
       </div>
     </header>
 
-    <!-- Main Area -->
+    <!-- === WORKSPACE === -->
     <div id="workspace">
-      <!-- Left Panel -->
+
+      <!-- LEFT PANEL -->
       <aside id="left-panel">
-        <div class="panel-section">
+        <!-- Tabs -->
+        <div class="panel-tabs">
+          <div class="panel-tab active" data-tab="media">Media</div>
+          <div class="panel-tab" data-tab="properties">Properties</div>
+          <div class="panel-tab" data-tab="effects">Effects</div>
+          <div class="panel-tab" data-tab="transitions">Transitions</div>
+        </div>
+
+        <!-- Media Panel -->
+        <div id="panel-media" class="panel-section">
           <div class="panel-header">
-            <span>Media</span>
-            <button id="btn-add-media" title="Add media files">+</button>
-            <input type="file" id="mediaInput" multiple accept="video/*,audio/*,image/*" style="display:none" />
+            <span>Media Bin</span>
+            <button id="btn-add-media" title="Add media">+</button>
           </div>
           <div id="media-bin" class="panel-content"></div>
         </div>
-        <div class="panel-section" id="props-panel" style="display:none">
-          <div class="panel-header"><span>Properties</span></div>
-          <div class="panel-content" id="props-content"></div>
+
+        <!-- Properties Panel -->
+        <div id="panel-properties" class="panel-section panel-content hidden"></div>
+
+        <!-- Effects Panel -->
+        <div id="panel-effects" class="panel-section panel-content hidden">
+          <div class="prop-group">
+            <div class="prop-group-title">Video Effects</div>
+            <div class="effects-grid" id="effects-grid"></div>
+          </div>
+          <div class="prop-group" id="effect-params" style="display:none">
+            <div class="prop-group-title">Effect Parameters</div>
+            <div id="effect-params-content"></div>
+          </div>
+        </div>
+
+        <!-- Transitions Panel -->
+        <div id="panel-transitions" class="panel-section panel-content hidden">
+          <div class="prop-group">
+            <div class="prop-group-title">Clip Transitions</div>
+            <div id="transitions-list"></div>
+          </div>
         </div>
       </aside>
 
-      <!-- Center -->
+      <!-- CENTER -->
       <div id="center">
+        <!-- Player -->
         <div id="player-container">
           <div id="player"></div>
           <div id="progress-overlay" style="display:none">
@@ -95,27 +153,67 @@
             </div>
           </div>
         </div>
+
+        <!-- Timeline -->
         <div id="timeline-container">
+          <!-- Timeline Toolbar -->
+          <div id="timeline-toolbar">
+            <button class="btn btn-sm btn-red" id="btn-split" title="Split at playhead">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="8,6 12,2 16,6"/><polyline points="8,18 12,22 16,18"/></svg>
+              Split
+            </button>
+            <button class="btn btn-sm btn-red" id="btn-delete-clip" title="Delete selected">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+              Delete
+            </button>
+            <div class="toolbar-sep"></div>
+            <label class="prop-row" style="gap:4px;min-width:0">
+              <span style="font-size:10px;color:var(--txt3)">Speed:</span>
+              <select id="speed-select" class="btn btn-sm" style="width:60px">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+                <option value="3">3x</option>
+                <option value="4">4x</option>
+              </select>
+            </label>
+            <label class="prop-row" style="gap:4px;min-width:0">
+              <span style="font-size:10px;color:var(--txt3)">Volume:</span>
+              <input type="range" id="volume-slider" min="0" max="200" value="100" style="width:60px;accent-color:var(--acc)">
+              <span id="volume-value" style="font-size:10px;min-width:24px">100%</span>
+            </label>
+          </div>
+
+          <!-- Timeline Header -->
           <div id="timeline-header">
             <span>Timeline</span>
             <div class="timeline-zoom">
               <button id="btn-zoom-out">-</button>
-              <span id="zoom-level">100%</span>
+              <span id="zoom-level">1.0x</span>
               <button id="btn-zoom-in">+</button>
             </div>
           </div>
+
+          <!-- Tracks -->
           <div id="timeline-tracks">
             <div id="track-labels">
-              <div class="track-label">Video</div>
-              <div class="track-label">Text</div>
-              <div class="track-label">Audio</div>
+              <div class="track-label"><span class="dot" style="background:var(--acc)"></span> Video</div>
+              <div class="track-label"><span class="dot" style="background:var(--green)"></span> Text</div>
+              <div class="track-label"><span class="dot" style="background:var(--yellow)"></span> Audio</div>
+              <div class="track-label"><span class="dot" style="background:var(--red)"></span> Shape</div>
             </div>
             <div id="timeline-scroll">
               <div id="timeline-ruler"></div>
               <div id="track-video" class="track video-track" data-type="video"></div>
               <div id="track-text" class="track text-track" data-type="text"></div>
               <div id="track-audio" class="track audio-track" data-type="audio"></div>
-              <div id="timeline-cursor"></div>
+              <div id="track-shape" class="track shape-track" data-type="shape"></div>
+              <div id="timeline-cursor">
+                <div id="cursor-handle"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -123,50 +221,103 @@
     </div>
   </div>
 
-  <!-- Text Modal -->
-  <div id="text-modal" style="display:none">
+  <!-- ========== TEXT MODAL ========== -->
+  <div id="text-modal" class="modal-overlay" style="display:none">
     <div class="modal-box">
       <h3>Add Text Overlay</h3>
-      <input type="text" id="text-input" placeholder="Type your text..." />
-      <div class="text-options">
-        <label>Font Size: <input type="number" id="text-size" value="48" min="8" max="200" /> px</label>
-        <label>Color: <input type="color" id="text-color" value="#ffffff" /></label>
-        <label>Position X: <input type="number" id="text-x" value="50" min="0" max="100" />%</label>
-        <label>Position Y: <input type="number" id="text-y" value="50" min="0" max="100" />%</label>
-        <label>Duration: <input type="number" id="text-duration" value="3" min="0.5" max="60" step="0.5" /> sec</label>
+      <input type="text" id="text-input" placeholder="Type your text..."/>
+      <div class="modal-options">
+        <label>Font Size<input type="number" id="text-size" value="48" min="8" max="200"/> px</label>
+        <label>Color<input type="color" id="text-color" value="#ffffff"/></label>
+        <label>Position X<input type="number" id="text-x" value="50" min="0" max="100"/>%</label>
+        <label>Position Y<input type="number" id="text-y" value="50" min="0" max="100"/>%</label>
+        <label>Duration<input type="number" id="text-duration" value="3" min="0.5" max="60" step="0.5"/> sec</label>
+        <label>Stroke Width<input type="number" id="text-stroke" value="0" min="0" max="10" step="1"/> px</label>
       </div>
       <div class="modal-actions">
-        <button id="text-cancel">Cancel</button>
-        <button id="text-confirm" class="primary">Add Text</button>
+        <button id="text-cancel" class="btn">Cancel</button>
+        <button id="text-confirm" class="btn primary">Add Text</button>
       </div>
     </div>
   </div>
 
-  <!-- Export Modal -->
-  <div id="export-modal" style="display:none">
+  <!-- ========== SHAPE MODAL ========== -->
+  <div id="shape-modal" class="modal-overlay" style="display:none">
     <div class="modal-box">
-      <h3>Export Video</h3>
-      <div class="export-options">
-        <label>Format:
-          <select id="export-format">
-            <option value="video/webm">WebM</option>
-            <option value="video/mp4">MP4</option>
-          </select>
-        </label>
-        <label>Quality:
-          <select id="export-quality">
-            <option value="low">Low (Fast)</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High (Slow)</option>
-          </select>
-        </label>
+      <h3>Add Shape</h3>
+      <div class="modal-options">
+        <label>Type<select id="shape-type"><option value="rectangle">Rectangle</option><option value="ellipse">Ellipse</option><option value="polygon">Polygon</option></select></label>
+        <label>Fill Color<input type="color" id="shape-fill" value="#5b4ed4"/></label>
+        <label>Width<input type="number" id="shape-width" value="200" min="10" max="1920"/> px</label>
+        <label>Height<input type="number" id="shape-height" value="200" min="10" max="1080"/> px</label>
+        <label>Position X<input type="number" id="shape-x" value="50" min="0" max="100"/>%</label>
+        <label>Position Y<input type="number" id="shape-y" value="50" min="0" max="100"/>%</label>
+        <label>Duration<input type="number" id="shape-duration" value="3" min="0.5" max="60" step="0.5"/> sec</label>
+        <label>Sides (polygon)<input type="number" id="shape-sides" value="6" min="3" max="20"/></label>
       </div>
       <div class="modal-actions">
-        <button id="export-cancel">Cancel</button>
-        <button id="export-confirm" class="primary">Start Export</button>
+        <button id="shape-cancel" class="btn">Cancel</button>
+        <button id="shape-confirm" class="btn primary">Add Shape</button>
       </div>
     </div>
   </div>
+
+  <!-- ========== CAPTION MODAL ========== -->
+  <div id="caption-modal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <h3>Add Auto Caption</h3>
+      <input type="text" id="caption-text" placeholder="Paste transcript text (space-separated words)..."/>
+      <div class="modal-options">
+        <label>Preset<select id="caption-preset">
+          <option value="CLASSIC">Classic</option>
+          <option value="CASCADE">Cascade</option>
+          <option value="SPOTLIGHT" selected>Spotlight</option>
+          <option value="WHISPER">Whisper</option>
+          <option value="SOLAR">Solar</option>
+          <option value="PAPER">Paper</option>
+          <option value="VERDANT">Verdant</option>
+          <option value="GUINEA">Guinea</option>
+        </select></label>
+        <label>Font Size<input type="number" id="caption-size" value="48" min="16" max="200"/> px</label>
+        <label>Position Y<input type="number" id="caption-y" value="85" min="0" max="100"/>%</label>
+        <label>Start Time<input type="number" id="caption-start" value="0" min="0" step="0.5"/> sec</label>
+      </div>
+      <div class="modal-actions">
+        <button id="caption-cancel" class="btn">Cancel</button>
+        <button id="caption-confirm" class="btn primary">Add Captions</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EXPORT MODAL ========== -->
+  <div id="export-modal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <h3>Export Video</h3>
+      <div class="modal-options">
+        <label>Format<select id="export-format"><option value="video/webm">WebM</option><option value="video/mp4">MP4</option></select></label>
+        <label>Quality<select id="export-quality"><option value="low">Low (Fast)</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label>
+      </div>
+      <div class="modal-actions">
+        <button id="export-cancel" class="btn">Cancel</button>
+        <button id="export-confirm" class="btn primary">Start Export</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CONTEXT MENU ========== -->
+  <div id="context-menu">
+    <div class="ctx-item" data-action="split">✂ Split at Playhead</div>
+    <div class="ctx-item" data-action="duplicate">📋 Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" data-action="front">⬆ Bring to Front</div>
+    <div class="ctx-item" data-action="back">⬇ Send to Back</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" data-action="delete">🗑 Delete</div>
+  </div>
+
+  <!-- ========== HIDDEN ========== -->
+  <input type="file" id="mediaInput" multiple accept="video/*,audio/*,image/*" style="display:none"/>
+  <input type="file" id="loadInput" accept=".json" style="display:none"/>
 
   <script type="module" src="playground/main.ts"></script>
 </body>
