@@ -6,9 +6,9 @@ import {
 } from './editor';
 
 // === Composition ===
-let composition: core.Composition;
+let composition: any;
 
-async function buildComposition(): Promise<core.Composition> {
+async function buildComposition(): Promise<any> {
   const comp = new core.Composition({
     background: '#000000',
   });
@@ -24,17 +24,18 @@ async function buildComposition(): Promise<core.Composition> {
 
     for (const clip of videoClips) {
       if (!clip.source) continue;
+      const delayStr = `${clip.startTime}s`;
       if (clip.type === 'video') {
-        const vc = new core.VideoClip(clip.source as core.VideoSource, {
-          startTime: clip.startTime,
-          duration: clip.duration,
+        const vc = new core.VideoClip(clip.source, {
+          delay: delayStr as any,
+          duration: `${clip.duration}s` as any,
           effects: clip.effects || [],
         });
         await videoLayer.add(vc);
       } else if (clip.type === 'image') {
-        const ic = new core.ImageClip(clip.source as core.ImageSource, {
-          startTime: clip.startTime,
-          duration: clip.duration,
+        const ic = new core.ImageClip(clip.source, {
+          delay: delayStr as any,
+          duration: `${clip.duration}s` as any,
           effects: clip.effects || [],
         });
         await videoLayer.add(ic);
@@ -49,13 +50,13 @@ async function buildComposition(): Promise<core.Composition> {
     await textLayer.add(new core.TextClip({
       text: clip.text || '',
       fontSize: clip.fontSize || 48,
-      color: clip.fontColor || '#ffffff',
-      x: `${clip.x || 50}%`,
-      y: `${clip.y || 50}%`,
+      color: (clip.fontColor || '#ffffff') as `#${string}`,
+      x: `${clip.x || 50}%` as any,
+      y: `${clip.y || 50}%` as any,
       align: 'center',
       baseline: 'middle',
-      startTime: clip.startTime,
-      duration: clip.duration,
+      delay: `${clip.startTime}s` as any,
+      duration: `${clip.duration}s` as any,
     }));
   }
 
@@ -65,9 +66,9 @@ async function buildComposition(): Promise<core.Composition> {
     await comp.add(audioLayer);
     for (const clip of audioClips) {
       if (!clip.source) continue;
-      const ac = new core.AudioClip(clip.source as core.AudioSource, {
-        startTime: clip.startTime,
-        duration: clip.duration,
+      const ac = new core.AudioClip(clip.source, {
+        delay: `${clip.startTime}s` as any,
+        duration: `${clip.duration}s` as any,
       });
       await audioLayer.add(ac);
     }
@@ -100,13 +101,13 @@ async function handleFiles(files: FileList | File[]) {
     // Load source
     try {
       if (mediaType === 'video') {
-        clip.source = await core.Source.from<core.VideoSource>(url);
-        clip.duration = (clip.source as any).duration || 5;
+        clip.source = await core.Source.from(url);
+        clip.duration = 5;
       } else if (mediaType === 'audio') {
-        clip.source = await core.Source.from<core.AudioSource>(url);
-        clip.duration = (clip.source as any).duration || 5;
+        clip.source = await core.Source.from(url);
+        clip.duration = 5;
       } else if (mediaType === 'image') {
-        clip.source = await core.Source.from<core.ImageSource>(url);
+        clip.source = await core.Source.from(url);
         clip.duration = 5;
       }
     } catch (e) {
@@ -143,6 +144,7 @@ async function refreshPlayer() {
     const container = document.getElementById('player-container');
     if (container) {
       const handleResize = () => {
+        if (!composition || !container) return;
         const scale = Math.min(
           container.clientWidth / composition.width,
           container.clientHeight / composition.height
@@ -197,17 +199,20 @@ function setupControls() {
 
   composition?.on('playback:time', () => updateTimeDisplay());
   composition?.on('playback:end', () => {
-    document.getElementById('btn-pause')!.style.display = 'none';
-    document.getElementById('btn-play')!.style.display = '';
+    const pauseBtn = document.getElementById('btn-pause');
+    const playBtn = document.getElementById('btn-play');
+    if (pauseBtn) pauseBtn.style.display = 'none';
+    if (playBtn) playBtn.style.display = '';
     state.isPlaying = false;
   });
 
   // Timeline seek
   const scroll = document.getElementById('timeline-scroll');
   scroll?.addEventListener('click', (e) => {
+    if (!scroll || !composition) return;
     const rect = scroll.getBoundingClientRect();
     const pos = (e.clientX - rect.left + scroll.scrollLeft) / (60 * state.zoom);
-    composition?.seek(Math.max(0, pos));
+    composition.seek(Math.max(0, pos));
     updateTimeDisplay();
     updateCursor(pos);
   });
@@ -383,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editor && editor.style.display !== 'none') {
       observer.disconnect();
       // Init composition
-      composition = new core.Composition({ background: '#000' });
+      composition = null;
       setupControls();
       setupZoom();
       setupTextModal();

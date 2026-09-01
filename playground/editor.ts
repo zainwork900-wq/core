@@ -6,7 +6,7 @@ export interface ClipData {
   name: string;
   file?: File;
   url?: string;
-  source?: core.Source<any>;
+  source?: any;
   startTime: number;
   duration: number;
   trimStart: number;
@@ -19,7 +19,7 @@ export interface ClipData {
   x?: number;
   y?: number;
   // Effects
-  effects?: core.Effect[];
+  effects?: any[];
 }
 
 export interface EditorState {
@@ -168,7 +168,8 @@ export function renderTimeline() {
     audioTrack.innerHTML = '<div class="track-hint">Drop audio here</div>';
   }
 
-  document.getElementById('zoom-level').textContent = Math.round(state.zoom * 100) + '%';
+  const zoomEl = document.getElementById('zoom-level');
+  if (zoomEl) zoomEl.textContent = Math.round(state.zoom * 100) + '%';
 }
 
 // === Properties Panel ===
@@ -211,7 +212,7 @@ export function renderProperties() {
     const brightness = effects.find((e: any) => e.type === 'brightness');
 
     addRow('Blur', `<input type="range" min="0" max="20" value="${blur ? blur.value : 0}" data-effect="blur" /><span class="prop-value">${blur ? blur.value : 0}</span>`);
-    addRow('Brightness', `<input type="range" min="-100" max="100" value="${brightness ? brightness.value : 0}" data-effect="brightness" /><span class="prop-value">${brightness ? brightness.value : 0}</span>`);
+    addRow('Brightness', `<input type="range" min="0" max="200" value="${brightness ? brightness.value : 100}" data-effect="brightness" /><span class="prop-value">${brightness ? brightness.value : 100}</span>`);
   }
 
   // Delete button
