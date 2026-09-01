@@ -13,6 +13,20 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-syste
 ::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:#bbb}
 
+/* === LOCK SCREEN === */
+#lock-screen{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg)}
+.lock-box{text-align:center;padding:48px 40px;border:1px solid var(--brd);border-radius:16px;max-width:400px;width:90%;background:var(--bg2);box-shadow:var(--shadow2)}
+.lock-icon{color:var(--acc);margin-bottom:20px}
+.lock-box h1{font-size:26px;font-weight:700;margin-bottom:6px}
+.lock-box>p{color:var(--txt2);margin-bottom:20px;font-size:13px}
+.lock-input-group{display:flex;gap:8px;margin-bottom:12px}
+.lock-input-group input{flex:1;padding:10px 14px;border:1px solid var(--brd);border-radius:var(--r2);background:var(--bg);color:var(--txt);font-size:14px;font-family:inherit;outline:none}
+.lock-input-group input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-glow)}
+.lock-input-group .upload-btn{padding:10px 20px;font-size:13px}
+.lock-error{color:var(--red);font-size:12px;margin-top:4px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .3s ease}
+
 /* === UPLOAD === */
 #upload-screen{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg)}
 .upload-box{text-align:center;padding:60px;border:2px dashed var(--brd);border-radius:16px;max-width:520px;width:90%;transition:all .3s;background:var(--bg2)}

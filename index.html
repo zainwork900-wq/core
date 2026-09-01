@@ -8,8 +8,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- ========== LOCK SCREEN ========== -->
+  <div id="lock-screen">
+    <div class="lock-box">
+      <div class="lock-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <h1>Video Editor</h1>
+      <p>Enter password to continue</p>
+      <div class="lock-input-group">
+        <input type="password" id="lock-password" placeholder="Password" autofocus/>
+        <button id="lock-submit" class="upload-btn">Unlock</button>
+      </div>
+      <p id="lock-error" class="lock-error" style="display:none">Wrong password. Try again.</p>
+    </div>
+  </div>
+
   <!-- ========== UPLOAD SCREEN ========== -->
-  <div id="upload-screen">
+  <div id="upload-screen" style="display:none">
     <div class="upload-box">
       <div class="upload-icon">
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>

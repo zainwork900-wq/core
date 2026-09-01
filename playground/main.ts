@@ -657,6 +657,35 @@ function doSave() {
   a.click();
 }
 
+// === Lock Screen ===
+function setupLockScreen() {
+  const lockScreen = document.getElementById('lock-screen');
+  const uploadScreen = document.getElementById('upload-screen');
+  const passwordInput = document.getElementById('lock-password') as HTMLInputElement;
+  const submitBtn = document.getElementById('lock-submit');
+  const errorMsg = document.getElementById('lock-error');
+
+  function unlock() {
+    const password = passwordInput.value.trim();
+    if (password === 'zainale') {
+      lockScreen!.style.display = 'none';
+      uploadScreen!.style.display = '';
+      setupUploadScreen();
+    } else {
+      errorMsg!.style.display = '';
+      passwordInput.value = '';
+      passwordInput.focus();
+      passwordInput.classList.add('shake');
+      setTimeout(() => passwordInput.classList.remove('shake'), 400);
+    }
+  }
+
+  submitBtn?.addEventListener('click', unlock);
+  passwordInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') unlock();
+  });
+}
+
 // === Upload Screen ===
 function setupUploadScreen() {
   const uploadScreen = document.getElementById('upload-screen');
@@ -701,7 +730,7 @@ function setupMediaAdd() {
 
 // === Init ===
 document.addEventListener('DOMContentLoaded', () => {
-  setupUploadScreen();
+  setupLockScreen();
   setupTabs();
 
   const observer = new MutationObserver(() => {
