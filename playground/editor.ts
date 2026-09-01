@@ -155,17 +155,32 @@ export function splitClipAtPlayhead(playheadTime: number): void {
 
   saveState();
 
+  // Save original values before modifying
+  const origDuration = clip.duration;
+  const origTrimStart = clip.trimStart;
+
+  // First half — keeps start of original, duration up to playhead
+  clip.duration = relTime;
+
+  // Second half — starts at playhead, gets the rest
+  const secondHalfDuration = origDuration - relTime;
   const newClip: ClipData = {
     ...clip,
     id: nextId(),
-    startTime: clip.startTime + relTime,
-    duration: clip.duration - relTime,
-    trimStart: clip.trimStart + relTime * clip.speed,
-    name: clip.name + ' (split)',
+    startTime: playheadTime,
+    duration: secondHalfDuration,
+    trimStart: origTrimStart + relTime * clip.speed,
+    trimEnd: clip.trimEnd,
+    name: clip.name + ' (2)',
+    file: clip.file,
+    url: clip.url,
+    source: clip.source,
+    effects: [...clip.effects],
   };
 
-  clip.duration = relTime;
-  clip.trimEnd = clip.trimEnd + (clip.duration - relTime) * clip.speed;
+  // Fix original clip's trimEnd — it now ends at the split point
+  clip.trimEnd = origTrimStart + origDuration * clip.speed;
+  clip.name = clip.name.replace(/ \(2\)$/, '') + ' (1)';
 
   state.clips.push(newClip);
   recalcDuration();
@@ -387,6 +402,16 @@ function escHtml(s: string): string {
 }
 
 function bindPropEvents(clip: ClipData): void {
+  let rebuildTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const scheduleRebuild = () => {
+    if (rebuildTimer) clearTimeout(rebuildTimer);
+    rebuildTimer = setTimeout(() => {
+      // Trigger rebuild via custom event
+      window.dispatchEvent(new CustomEvent('editor:rebuild'));
+    }, 300);
+  };
+
   const bind = (id: string, key: keyof ClipData, transform?: (v: any) => any) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -396,6 +421,7 @@ function bindPropEvents(clip: ClipData): void {
       if (transform) val = transform(val);
       (clip as any)[key] = val;
       renderMediaBin();
+      scheduleRebuild();
     });
   };
 

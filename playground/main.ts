@@ -566,6 +566,8 @@ async function doExport() {
     if (!exportComp) { alert('Nothing to export!'); overlay.classList.remove('show'); return; }
 
     const fps = parseInt((document.getElementById('fps-select') as HTMLSelectElement).value) || 30;
+    const format = (document.getElementById('format-select') as HTMLSelectElement).value || 'video/webm';
+    const ext = format === 'video/mp4' ? 'mp4' : 'webm';
     const encoder = new core.Encoder(exportComp, { debug: true, video: { fps } });
 
     if (cancelled) { overlay.classList.remove('show'); return; }
@@ -579,8 +581,8 @@ async function doExport() {
     };
 
     const fileHandle = await (window as any).showSaveFilePicker({
-      suggestedName: 'edited_video.mp4',
-      types: [{ description: 'Video File', accept: { 'video/mp4': ['.mp4'] } }],
+      suggestedName: `edited_video.${ext}`,
+      types: [{ description: 'Video File', accept: { [format]: [`.${ext}`] } }],
     });
 
     await encoder.render(fileHandle);
@@ -711,7 +713,7 @@ function setupShortcutsPanel() {
   });
 }
 
-// === Save / Load ===
+// === Save / Load / Lock ===
 function setupSaveLoad() {
   document.getElementById('btn-save')?.addEventListener('click', doSave);
   document.getElementById('btn-load')?.addEventListener('click', () => {
@@ -726,6 +728,7 @@ function setupSaveLoad() {
     await refreshPlayer();
     (e.target as HTMLInputElement).value = '';
   });
+  document.getElementById('btn-lock')?.addEventListener('click', lockSession);
 }
 
 function doSave() {
@@ -738,6 +741,9 @@ function doSave() {
 }
 
 // === Lock Screen ===
+const LOCK_TIMEOUT = 30 * 60 * 1000; // 30 minutes auto-lock
+let lockTimer: ReturnType<typeof setTimeout> | null = null;
+
 function setupLockScreen() {
   const lockScreen = document.getElementById('lock-screen');
   const uploadScreen = document.getElementById('upload-screen');
@@ -751,6 +757,7 @@ function setupLockScreen() {
       lockScreen!.style.display = 'none';
       uploadScreen!.style.display = '';
       setupUploadScreen();
+      startAutoLock();
     } else {
       errorMsg!.style.display = '';
       passwordInput.value = '';
@@ -764,6 +771,38 @@ function setupLockScreen() {
   passwordInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') unlock();
   });
+}
+
+function startAutoLock() {
+  const resetTimer = () => {
+    if (lockTimer) clearTimeout(lockTimer);
+    lockTimer = setTimeout(lockSession, LOCK_TIMEOUT);
+  };
+  document.addEventListener('mousemove', resetTimer);
+  document.addEventListener('keydown', resetTimer);
+  document.addEventListener('click', resetTimer);
+  document.addEventListener('touchstart', resetTimer);
+  resetTimer();
+}
+
+function lockSession() {
+  if (lockTimer) clearTimeout(lockTimer);
+  const lockScreen = document.getElementById('lock-screen');
+  const uploadScreen = document.getElementById('upload-screen');
+  const editorScreen = document.getElementById('editor-screen');
+
+  // Stop playback
+  if (composition) {
+    try { composition.pause(); } catch (e) {}
+    showPlayState(false);
+  }
+
+  if (editorScreen) editorScreen.style.display = 'none';
+  if (uploadScreen) uploadScreen.style.display = 'none';
+  if (lockScreen) lockScreen.style.display = '';
+
+  const passwordInput = document.getElementById('lock-password') as HTMLInputElement;
+  if (passwordInput) { passwordInput.value = ''; passwordInput.focus(); }
 }
 
 // === Upload Screen ===
@@ -836,6 +875,9 @@ document.addEventListener('DOMContentLoaded', () => {
       setupShortcutsPanel();
       setupSaveLoad();
       setupMediaAdd();
+
+      // Rebuild when properties change
+      window.addEventListener('editor:rebuild', () => { refreshPlayer(); });
     }
   });
   observer.observe(document.body, { subtree: true, attributes: true });
