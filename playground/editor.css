@@ -48,7 +48,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-syste
 .logo{width:28px;height:28px;background:var(--acc);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
 .project-name{font-size:13px;color:var(--txt2)}
 .topbar-center{display:flex;align-items:center;gap:3px}
-.topbar-right{display:flex;align-items:center;gap:4px}
+.topbar-right{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .btn{padding:5px 10px;border:1px solid var(--brd);border-radius:var(--r2);background:var(--bg2);color:var(--txt);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px;transition:all .12s;font-family:inherit;height:30px;white-space:nowrap}
 .btn:hover{background:var(--bg3);border-color:#ccc}
 .btn.active{background:var(--acc);color:#fff;border-color:var(--acc)}
@@ -92,7 +92,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-syste
 .media-delete{opacity:0;border:none;background:none;color:var(--red);cursor:pointer;font-size:12px;padding:2px}
 .media-item:hover .media-delete{opacity:1}
 
-/* === PROPERTIES PANEL === */
+/* === PROPERTIES === */
 .prop-group{margin-bottom:8px}
 .prop-group-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);padding:4px 0;margin-bottom:4px;border-bottom:1px solid var(--bg3)}
 .prop-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:11px}
@@ -101,10 +101,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-syste
 .prop-row input[type="number"],.prop-row input[type="text"],.prop-row select{width:70px;padding:3px 5px;border:1px solid var(--brd);border-radius:3px;background:var(--bg);color:var(--txt);font-size:11px}
 .prop-row input[type="color"]{width:28px;height:22px;border:1px solid var(--brd);border-radius:3px;cursor:pointer;background:none;padding:0}
 .prop-value{font-size:10px;color:var(--txt3);min-width:28px;text-align:right}
-.prop-checkbox{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2);cursor:pointer}
-.prop-checkbox input{accent-color:var(--acc)}
 
-/* === EFFECTS GRID === */
+/* === EFFECTS === */
 .effects-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .effect-card{padding:6px;border:1px solid var(--brd);border-radius:var(--r2);cursor:pointer;text-align:center;font-size:10px;transition:all .12s}
 .effect-card:hover{border-color:var(--acc);background:var(--acc-dim)}
@@ -112,41 +110,39 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-syste
 .effect-card .icon{font-size:16px;margin-bottom:2px}
 .effect-card .name{font-weight:500}
 
-/* === TRANSITION LIST === */
+/* === TRANSITIONS === */
 .transition-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--r2);cursor:pointer;border:1px solid var(--brd);margin-bottom:4px;transition:all .12s;font-size:11px}
 .transition-item:hover{border-color:var(--acc);background:var(--acc-dim)}
 .transition-item.active{border-color:var(--acc);background:var(--acc);color:#fff}
 .transition-preview{width:28px;height:20px;border-radius:3px;background:linear-gradient(90deg,var(--acc) 50%,var(--bg3) 50%);flex-shrink:0}
 
-/* === SHAPES GRID === */
-.shapes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.shape-card{aspect-ratio:1;border:1px solid var(--brd);border-radius:var(--r2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .12s;font-size:9px;color:var(--txt2)}
-.shape-card:hover{border-color:var(--acc);background:var(--acc-dim)}
-.shape-card .shape-icon{font-size:20px}
-.shape-card.active{border-color:var(--acc);background:var(--acc);color:#fff}
-
-/* === CAPTIONS PRESETS === */
-.caption-preset{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--r2);cursor:pointer;border:1px solid var(--brd);margin-bottom:4px;transition:all .12s;font-size:11px}
-.caption-preset:hover{border-color:var(--acc);background:var(--acc-dim)}
-.caption-preset.active{border-color:var(--acc);background:var(--acc);color:#fff}
-.caption-preset .preset-icon{width:28px;height:20px;border-radius:3px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-
 /* === CENTER === */
 #center{flex:1;display:flex;flex-direction:column;min-width:0}
 
 /* === PLAYER === */
-#player-container{flex:1;background:#e8e8e8;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;min-height:180px}
+#player-container{flex:1;background:#e8e8e8;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;min-height:120px}
 #player{position:relative;background:#000}
-#progress-overlay{position:absolute;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:10}
-.progress-box{text-align:center;color:#fff}
-.progress-box h2{font-size:48px;font-weight:700;margin-bottom:16px}
-.progress-bar{width:300px;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin:0 auto 12px}
-#progress-fill{height:100%;background:var(--acc);width:0%;transition:width .3s}
-.progress-box p{font-size:12px;color:rgba(255,255,255,.6)}
+.player-fullscreen{position:fixed!important;inset:0!important;z-index:9999!important;background:#000!important;display:flex!important;align-items:center;justify-content:center}
+.player-fullscreen #player{position:relative}
+
+/* === EXPORT OVERLAY (BLOCKING) === */
+#export-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:10000;flex-direction:column;gap:24px}
+#export-overlay.show{display:flex}
+.export-box{text-align:center;color:#fff;max-width:400px;width:90%}
+.export-box h2{font-size:28px;font-weight:700;margin-bottom:8px}
+.export-box p{font-size:14px;color:rgba(255,255,255,.6);margin-bottom:24px}
+.export-progress-ring{width:120px;height:120px;margin:0 auto 24px;position:relative}
+.export-progress-ring svg{transform:rotate(-90deg)}
+.export-progress-ring .bg{stroke:rgba(255,255,255,.1);fill:none;stroke-width:6}
+.export-progress-ring .fg{stroke:var(--acc);fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .3s}
+.export-progress-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700}
+.export-status{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px}
+#export-cancel-btn{padding:10px 28px;border:1px solid rgba(255,255,255,.3);border-radius:var(--r2);background:transparent;color:#fff;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s}
+#export-cancel-btn:hover{background:var(--red);border-color:var(--red)}
 
 /* === TIMELINE === */
 #timeline-container{height:220px;border-top:1px solid var(--brd2);background:var(--bg2);display:flex;flex-direction:column;flex-shrink:0}
-#timeline-toolbar{display:flex;align-items:center;gap:6px;padding:4px 10px;border-bottom:1px solid var(--brd2);flex-shrink:0}
+#timeline-toolbar{display:flex;align-items:center;gap:6px;padding:4px 10px;border-bottom:1px solid var(--brd2);flex-shrink:0;flex-wrap:wrap}
 #timeline-toolbar .btn{height:24px;padding:2px 8px;font-size:10px}
 #timeline-toolbar .btn svg{width:12px;height:12px}
 #timeline-header{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;font-size:10px;font-weight:600;color:var(--txt3);border-bottom:1px solid var(--brd2)}
@@ -207,9 +203,60 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',system-ui,-apple-syste
 .ctx-item.danger{color:var(--red)}
 .ctx-sep{height:1px;background:var(--brd);margin:3px 6px}
 
-/* === RESPONSIVE === */
-@media(max-width:900px){
+/* === SHORTCUTS HELP === */
+#shortcuts-panel{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:150}
+#shortcuts-panel.show{display:flex}
+.shortcuts-box{background:var(--bg2);border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+.shortcuts-box h3{margin-bottom:12px;font-size:16px}
+.shortcut-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bg3);font-size:12px}
+.shortcut-row:last-child{border:none}
+.shortcut-key{background:var(--bg3);padding:2px 8px;border-radius:4px;font-family:'SF Mono',monospace;font-size:11px;font-weight:600}
+
+/* === RESPONSIVE — TABLET === */
+@media(max-width:1024px){
   #left-panel{width:200px}
-  .media-item{padding:4px 6px}
-  .media-thumb{width:30px;height:30px}
+  .topbar-right .btn:not(.export-btn){padding:3px 6px;height:26px;font-size:10px}
+  .topbar-right .btn-sm{padding:2px 6px;height:24px;font-size:9px}
+}
+
+/* === RESPONSIVE — MOBILE === */
+@media(max-width:768px){
+  #topbar{height:40px;padding:0 8px}
+  .topbar-left .project-name{display:none}
+  .topbar-center{display:none}
+  .topbar-right{gap:3px}
+  .topbar-right .btn{height:24px;padding:2px 6px;font-size:9px}
+  .topbar-right .btn svg{width:10px;height:10px}
+  .topbar-right select{height:24px;font-size:9px;padding:2px 4px}
+  .toolbar-sep{height:16px;margin:0 2px}
+  .logo{width:24px;height:24px;font-size:11px}
+
+  #workspace{flex-direction:column}
+  #left-panel{width:100%;height:180px;border-right:none;border-bottom:1px solid var(--brd2);flex-shrink:0}
+  .panel-tabs{overflow-x:auto}
+  .panel-tab{min-width:60px;padding:6px 8px;font-size:10px}
+  #panel-media{flex-direction:row}
+  #media-bin{display:flex;overflow-x:auto;gap:4px;padding:4px}
+  .media-item{min-width:100px;flex-shrink:0}
+  .media-info{display:none}
+  .media-thumb{width:48px;height:48px}
+
+  #player-container{min-height:150px;flex:1}
+  #timeline-container{height:180px}
+  #track-labels{width:50px}
+  .track-label{font-size:9px;padding:0 4px}
+  .track{height:36px}
+  .tclip{height:28px;font-size:8px}
+
+  .modal-box{width:95%;padding:16px}
+  .modal-options{grid-template-columns:1fr}
+}
+
+/* === RESPONSIVE — SMALL MOBILE === */
+@media(max-width:480px){
+  #topbar{height:36px}
+  .topbar-right .btn span:not(.logo){display:none}
+  #time-display{font-size:9px;min-width:60px}
+  #timeline-container{height:160px}
+  .track{height:32px}
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
   <title>Video Editor</title>
   <link rel="stylesheet" href="/playground/editor.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,30 +41,13 @@
   <!-- ========== EDITOR SCREEN ========== -->
   <div id="editor-screen" style="display:none">
 
-    <!-- === TOP BAR === -->
+    <!-- === TOP BAR (minimal on mobile) === -->
     <header id="topbar">
       <div class="topbar-left">
         <span class="logo">V</span>
         <span class="project-name" id="projectName">Untitled</span>
       </div>
-
       <div class="topbar-center">
-        <button class="btn btn-icon" id="btn-back" title="Start">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19,20 9,12 19,4"/></svg>
-        </button>
-        <button class="btn btn-icon" id="btn-play" title="Play">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-        </button>
-        <button class="btn btn-icon" id="btn-pause" title="Pause" style="display:none">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        </button>
-        <button class="btn btn-icon" id="btn-forward" title="End">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,4 15,12 5,20"/></svg>
-        </button>
-        <span id="time-display">00:00.000 / 00:00.000</span>
-      </div>
-
-      <div class="topbar-right">
         <button class="btn btn-icon" id="btn-undo" title="Undo (Ctrl+Z)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h10a5 5 0 015 5v0a5 5 0 01-5 5H3"/><path d="M3 10l4-4M3 10l4 4"/></svg>
         </button>
@@ -85,10 +68,15 @@
           Caption
         </button>
         <div class="toolbar-sep"></div>
+        <button class="btn btn-sm" id="btn-fullscreen" title="Fullscreen Preview">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </button>
         <button class="btn btn-sm" id="btn-screenshot" title="Screenshot">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-        <div class="toolbar-sep"></div>
+        <button class="btn btn-sm" id="btn-shortcuts" title="Keyboard Shortcuts">?</button>
+      </div>
+      <div class="topbar-right">
         <button class="btn btn-sm" id="btn-save" title="Save Project">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/></svg>
           Save
@@ -97,13 +85,12 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           Load
         </button>
-        <div class="toolbar-sep"></div>
         <select id="fps-select" class="btn btn-sm" style="width:auto">
           <option value="24">24 FPS</option>
           <option value="30" selected>30 FPS</option>
           <option value="60">60 FPS</option>
         </select>
-        <button id="btn-export" class="btn export-btn" style="font-weight:600">
+        <button id="btn-export" class="btn export-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           Export
         </button>
@@ -112,18 +99,14 @@
 
     <!-- === WORKSPACE === -->
     <div id="workspace">
-
       <!-- LEFT PANEL -->
       <aside id="left-panel">
-        <!-- Tabs -->
         <div class="panel-tabs">
           <div class="panel-tab active" data-tab="media">Media</div>
           <div class="panel-tab" data-tab="properties">Properties</div>
           <div class="panel-tab" data-tab="effects">Effects</div>
           <div class="panel-tab" data-tab="transitions">Transitions</div>
         </div>
-
-        <!-- Media Panel -->
         <div id="panel-media" class="panel-section">
           <div class="panel-header">
             <span>Media Bin</span>
@@ -131,11 +114,7 @@
           </div>
           <div id="media-bin" class="panel-content"></div>
         </div>
-
-        <!-- Properties Panel -->
         <div id="panel-properties" class="panel-section panel-content hidden"></div>
-
-        <!-- Effects Panel -->
         <div id="panel-effects" class="panel-section panel-content hidden">
           <div class="prop-group">
             <div class="prop-group-title">Video Effects</div>
@@ -146,8 +125,6 @@
             <div id="effect-params-content"></div>
           </div>
         </div>
-
-        <!-- Transitions Panel -->
         <div id="panel-transitions" class="panel-section panel-content hidden">
           <div class="prop-group">
             <div class="prop-group-title">Clip Transitions</div>
@@ -158,22 +135,26 @@
 
       <!-- CENTER -->
       <div id="center">
-        <!-- Player -->
         <div id="player-container">
           <div id="player"></div>
-          <div id="progress-overlay" style="display:none">
-            <div class="progress-box">
-              <h2 id="progress-text">0%</h2>
-              <div class="progress-bar"><div id="progress-fill"></div></div>
-              <p>Rendering... Click to cancel</p>
-            </div>
-          </div>
         </div>
-
-        <!-- Timeline -->
         <div id="timeline-container">
-          <!-- Timeline Toolbar -->
           <div id="timeline-toolbar">
+            <!-- PLAY BUTTON IS HERE — next to timeline -->
+            <button class="btn btn-sm" id="btn-back" title="Go to start">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19,20 9,12 19,4"/></svg>
+            </button>
+            <button class="btn btn-sm" id="btn-play" title="Play (Space)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            </button>
+            <button class="btn btn-sm" id="btn-pause" title="Pause (Space)" style="display:none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+            <button class="btn btn-sm" id="btn-forward" title="Go to end">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,4 15,12 5,20"/></svg>
+            </button>
+            <span id="time-display" style="font-size:10px">00:00.000 / 00:00.000</span>
+            <div class="toolbar-sep"></div>
             <button class="btn btn-sm btn-red" id="btn-split" title="Split at playhead">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="8,6 12,2 16,6"/><polyline points="8,18 12,22 16,18"/></svg>
               Split
@@ -185,7 +166,7 @@
             <div class="toolbar-sep"></div>
             <label class="prop-row" style="gap:4px;min-width:0">
               <span style="font-size:10px;color:var(--txt3)">Speed:</span>
-              <select id="speed-select" class="btn btn-sm" style="width:60px">
+              <select id="speed-select" class="btn btn-sm" style="width:56px">
                 <option value="0.25">0.25x</option>
                 <option value="0.5">0.5x</option>
                 <option value="0.75">0.75x</option>
@@ -197,13 +178,11 @@
               </select>
             </label>
             <label class="prop-row" style="gap:4px;min-width:0">
-              <span style="font-size:10px;color:var(--txt3)">Volume:</span>
-              <input type="range" id="volume-slider" min="0" max="200" value="100" style="width:60px;accent-color:var(--acc)">
-              <span id="volume-value" style="font-size:10px;min-width:24px">100%</span>
+              <span style="font-size:10px;color:var(--txt3)">Vol:</span>
+              <input type="range" id="volume-slider" min="0" max="200" value="100" style="width:50px;accent-color:var(--acc)">
+              <span id="volume-value" style="font-size:9px;min-width:24px">100%</span>
             </label>
           </div>
-
-          <!-- Timeline Header -->
           <div id="timeline-header">
             <span>Timeline</span>
             <div class="timeline-zoom">
@@ -212,8 +191,6 @@
               <button id="btn-zoom-in">+</button>
             </div>
           </div>
-
-          <!-- Tracks -->
           <div id="timeline-tracks">
             <div id="track-labels">
               <div class="track-label"><span class="dot" style="background:var(--acc)"></span> Video</div>
@@ -233,6 +210,38 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EXPORT OVERLAY (BLOCKING) ========== -->
+  <div id="export-overlay">
+    <div class="export-box">
+      <div class="export-progress-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle class="bg" cx="60" cy="60" r="52"/>
+          <circle class="fg" id="export-ring-fg" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+        </svg>
+        <div class="export-progress-pct" id="export-pct">0%</div>
+      </div>
+      <h2>Exporting...</h2>
+      <p class="export-status" id="export-status">Preparing video. Don't close this page.</p>
+      <button id="export-cancel-btn">Cancel Export</button>
+    </div>
+  </div>
+
+  <!-- ========== SHORTCUTS PANEL ========== -->
+  <div id="shortcuts-panel">
+    <div class="shortcuts-box">
+      <h3>Keyboard Shortcuts</h3>
+      <div class="shortcut-row"><span>Play / Pause</span><span class="shortcut-key">Space</span></div>
+      <div class="shortcut-row"><span>Undo</span><span class="shortcut-key">Ctrl + Z</span></div>
+      <div class="shortcut-row"><span>Redo</span><span class="shortcut-key">Ctrl + Y</span></div>
+      <div class="shortcut-row"><span>Delete clip</span><span class="shortcut-key">Delete / Backspace</span></div>
+      <div class="shortcut-row"><span>Save project</span><span class="shortcut-key">Ctrl + S</span></div>
+      <div class="shortcut-row"><span>Close panel</span><span class="shortcut-key">Escape</span></div>
+      <div style="text-align:right;margin-top:12px">
+        <button class="btn" id="shortcuts-close">Close</button>
       </div>
     </div>
   </div>
@@ -301,21 +310,6 @@
       <div class="modal-actions">
         <button id="caption-cancel" class="btn">Cancel</button>
         <button id="caption-confirm" class="btn primary">Add Captions</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== EXPORT MODAL ========== -->
-  <div id="export-modal" class="modal-overlay" style="display:none">
-    <div class="modal-box">
-      <h3>Export Video</h3>
-      <div class="modal-options">
-        <label>Format<select id="export-format"><option value="video/webm">WebM</option><option value="video/mp4">MP4</option></select></label>
-        <label>Quality<select id="export-quality"><option value="low">Low (Fast)</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label>
-      </div>
-      <div class="modal-actions">
-        <button id="export-cancel" class="btn">Cancel</button>
-        <button id="export-confirm" class="btn primary">Start Export</button>
       </div>
     </div>
   </div>

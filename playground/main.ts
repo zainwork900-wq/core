@@ -538,45 +538,67 @@ function setupCaptionModal() {
 function setupExport() {
   document.getElementById('btn-export')?.addEventListener('click', () => {
     if (state.clips.length === 0) { alert('Add some media first!'); return; }
-    document.getElementById('export-modal')!.style.display = '';
-  });
-  document.getElementById('export-cancel')?.addEventListener('click', () => { document.getElementById('export-modal')!.style.display = 'none'; });
-  document.getElementById('export-confirm')?.addEventListener('click', async () => {
-    document.getElementById('export-modal')!.style.display = 'none';
-    await doExport();
+    doExport();
   });
 }
 
 async function doExport() {
-  const overlay = document.getElementById('progress-overlay');
-  const progressText = document.getElementById('progress-text');
-  const progressFill = document.getElementById('progress-fill');
+  const overlay = document.getElementById('export-overlay');
+  const ring = document.getElementById('export-ring-fg') as unknown as SVGCircleElement;
+  const pctEl = document.getElementById('export-pct');
+  const statusEl = document.getElementById('export-status');
+  const cancelBtn = document.getElementById('export-cancel-btn');
   if (!overlay) return;
+
+  const circumference = 2 * Math.PI * 52;
+  if (ring) ring.style.strokeDashoffset = String(circumference);
+
+  overlay.classList.add('show');
+  if (statusEl) statusEl.textContent = 'Preparing video. Don\'t close this page.';
+  if (pctEl) pctEl.textContent = '0%';
+
+  let cancelled = false;
+  const onCancel = () => { cancelled = true; };
+  cancelBtn?.addEventListener('click', onCancel, { once: true });
 
   try {
     const exportComp = await buildComposition();
-    if (!exportComp) { alert('Nothing to export!'); return; }
-    overlay.style.display = 'flex';
+    if (!exportComp) { alert('Nothing to export!'); overlay.classList.remove('show'); return; }
+
     const fps = parseInt((document.getElementById('fps-select') as HTMLSelectElement).value) || 30;
     const encoder = new core.Encoder(exportComp, { debug: true, video: { fps } });
-    overlay.onclick = () => encoder.cancel();
+
+    if (cancelled) { overlay.classList.remove('show'); return; }
+
     encoder.onProgress = (event: any) => {
+      if (cancelled) return;
       const pct = Math.round(event.progress * 100 / event.total);
-      if (progressText) progressText.textContent = pct + '%';
-      if (progressFill) progressFill.style.width = pct + '%';
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (ring) ring.style.strokeDashoffset = String(circumference - (pct / 100) * circumference);
+      if (statusEl) statusEl.textContent = pct < 100 ? `Rendering... ${pct}%` : 'Finalizing...';
     };
 
     const fileHandle = await (window as any).showSaveFilePicker({
       suggestedName: 'edited_video.mp4',
       types: [{ description: 'Video File', accept: { 'video/mp4': ['.mp4'] } }],
     });
+
     await encoder.render(fileHandle);
-    alert('Export complete!');
-  } catch (e: any) {
-    if (e?.name !== 'AbortError' && e?.message !== 'User cancelled a request.') {
-      alert('Export failed: ' + e.message);
+
+    if (!cancelled) {
+      if (pctEl) pctEl.textContent = '100%';
+      if (ring) ring.style.strokeDashoffset = '0';
+      if (statusEl) statusEl.textContent = 'Export complete! File saved.';
+      setTimeout(() => overlay.classList.remove('show'), 2000);
     }
-  } finally { overlay.style.display = 'none'; }
+  } catch (e: any) {
+    if (!cancelled && e?.name !== 'AbortError' && e?.message !== 'User cancelled a request.') {
+      if (statusEl) statusEl.textContent = 'Export failed: ' + e.message;
+      setTimeout(() => overlay.classList.remove('show'), 3000);
+    } else {
+      overlay.classList.remove('show');
+    }
+  }
 }
 
 // === Undo/Redo ===
@@ -628,6 +650,64 @@ function setupScreenshot() {
       a.download = 'screenshot.png';
       a.click();
     } catch (e) { console.error('Screenshot failed:', e); }
+  });
+}
+
+// === Fullscreen Preview ===
+function setupFullscreen() {
+  const playerContainer = document.getElementById('player-container');
+  document.getElementById('btn-fullscreen')?.addEventListener('click', () => {
+    if (!playerContainer) return;
+    if (playerContainer.classList.contains('player-fullscreen')) {
+      playerContainer.classList.remove('player-fullscreen');
+    } else {
+      playerContainer.classList.add('player-fullscreen');
+    }
+    // Trigger resize
+    setTimeout(() => {
+      if (composition) {
+        const w = composition.width || 1920;
+        const h = composition.height || 1080;
+        if (playerContainer.classList.contains('player-fullscreen')) {
+          const scale = Math.min(window.innerWidth / w, window.innerHeight / h);
+          playerEl!.style.width = w + 'px';
+          playerEl!.style.height = h + 'px';
+          playerEl!.style.transform = `scale(${scale})`;
+        } else {
+          const handleResize = () => {
+            if (!composition || !playerEl) return;
+            const container = document.getElementById('player-container');
+            if (!container) return;
+            const scale = Math.min((container.clientWidth - 20) / w, (container.clientHeight - 20) / h, 1);
+            playerEl!.style.width = w + 'px';
+            playerEl!.style.height = h + 'px';
+            playerEl!.style.transform = `scale(${scale})`;
+          };
+          handleResize();
+        }
+      }
+    }, 100);
+  });
+
+  // Escape to exit fullscreen
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && playerContainer?.classList.contains('player-fullscreen')) {
+      playerContainer.classList.remove('player-fullscreen');
+    }
+  });
+}
+
+// === Shortcuts Panel ===
+function setupShortcutsPanel() {
+  const panel = document.getElementById('shortcuts-panel');
+  document.getElementById('btn-shortcuts')?.addEventListener('click', () => {
+    panel!.classList.add('show');
+  });
+  document.getElementById('shortcuts-close')?.addEventListener('click', () => {
+    panel!.classList.remove('show');
+  });
+  panel?.addEventListener('click', (e) => {
+    if (e.target === panel) panel.classList.remove('show');
   });
 }
 
@@ -752,6 +832,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setupUndoRedo();
       setupTimelineToolbar();
       setupScreenshot();
+      setupFullscreen();
+      setupShortcutsPanel();
       setupSaveLoad();
       setupMediaAdd();
     }
