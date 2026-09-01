@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node -e \"try{require('child_process').execSync('node node_modules/esbuild/install.js',{stdio:'inherit'})}catch(e){}\""
   },
   "devDependencies": {
     "@types/wicg-file-system-access": "^2023.10.7",
