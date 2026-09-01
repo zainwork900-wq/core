@@ -16,6 +16,6 @@
     "vite": "^7.2.2"
   },
   "dependencies": {
-    "@diffusionstudio/core": "^4.0.0"
+    "@diffusionstudio/core-v4": "^4.0.0"
   }
 }
